@@ -613,3 +613,31 @@ footer { background: var(--navy); color: rgba(255,255,255,0.68); padding: 68px 5
   .btn-outline { width: 100%; justify-content: center; }
   .hero-stat   { flex: 1; min-width: calc(50% - 8px); }
 }
+
+.cert-item-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--light);
+  padding: 8px 20px;
+  border-radius: 40px;
+  transition: all 0.3s ease;
+}
+.cert-item-logo img {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
+.cert-item-logo span {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--navy);
+}
+.cert-item-logo:hover {
+  background: var(--accent);
+  transform: translateY(-2px);
+}
+.cert-item-logo:hover span {
+  color: white;
+}
