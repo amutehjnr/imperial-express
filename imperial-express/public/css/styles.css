@@ -127,7 +127,7 @@ p  { font-size: 1rem; color: var(--muted); }
   position: absolute; inset: 0;
   background:
     linear-gradient(135deg, rgba(10,26,92,0.93) 0%, rgba(10,47,166,0.72) 55%, rgba(26,140,255,0.28) 100%),
-    url('https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1600&q=80') center/cover no-repeat;
+    url('/images/hero-background.jpg') center/cover no-repeat;
   z-index: 0;
 }
 .hero-body {
@@ -640,4 +640,111 @@ footer { background: var(--navy); color: rgba(255,255,255,0.68); padding: 68px 5
 }
 .cert-item-logo:hover span {
   color: white;
+}
+
+/* Equipment Carousel */
+.equip-carousel {
+  position: relative;
+  overflow: hidden;
+  border-radius: 12px;
+  background: var(--light);
+}
+
+.carousel-container {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 12px;
+}
+
+.carousel-track {
+  display: flex;
+  transition: transform 0.5s ease-in-out;
+}
+
+.carousel-slide {
+  flex: 0 0 100%;
+  position: relative;
+}
+
+.carousel-slide img {
+  width: 100%;
+  height: 400px;
+  object-fit: cover;
+}
+
+.carousel-caption {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to top, rgba(10,26,92,0.9), transparent);
+  color: white;
+  padding: 20px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+}
+
+.carousel-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--primary);
+  color: white;
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--tr);
+  z-index: 10;
+}
+
+.carousel-btn:hover {
+  background: var(--accent);
+  transform: translateY(-50%) scale(1.1);
+}
+
+.carousel-btn.prev {
+  left: 16px;
+}
+
+.carousel-btn.next {
+  right: 16px;
+}
+
+.carousel-dots {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  padding: 16px;
+  background: var(--white);
+}
+
+.carousel-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--border);
+  cursor: pointer;
+  transition: all var(--tr);
+}
+
+.carousel-dot.active {
+  background: var(--accent);
+  width: 24px;
+  border-radius: 5px;
+}
+
+@media (max-width: 768px) {
+  .carousel-slide img {
+    height: 280px;
+  }
+  .carousel-btn {
+    width: 32px;
+    height: 32px;
+  }
 }

@@ -131,3 +131,74 @@
   });
 
 })();
+
+// Equipment Carousel
+function initCarousel() {
+  const track = document.querySelector('.carousel-track');
+  const slides = document.querySelectorAll('.carousel-slide');
+  const prevBtn = document.querySelector('.carousel-btn.prev');
+  const nextBtn = document.querySelector('.carousel-btn.next');
+  const dotsContainer = document.querySelector('.carousel-dots');
+  
+  if (!track || !slides.length) return;
+  
+  let currentIndex = 0;
+  const slideCount = slides.length;
+  
+  // Create dots
+  slides.forEach((_, i) => {
+    const dot = document.createElement('div');
+    dot.classList.add('carousel-dot');
+    if (i === 0) dot.classList.add('active');
+    dot.addEventListener('click', () => goToSlide(i));
+    dotsContainer.appendChild(dot);
+  });
+  
+  const dots = document.querySelectorAll('.carousel-dot');
+  
+  function updateDots() {
+    dots.forEach((dot, i) => {
+      dot.classList.toggle('active', i === currentIndex);
+    });
+  }
+  
+  function goToSlide(index) {
+    if (index < 0) index = 0;
+    if (index >= slideCount) index = slideCount - 1;
+    currentIndex = index;
+    track.style.transform = `translateX(-${currentIndex * 100}%)`;
+    updateDots();
+  }
+  
+  function nextSlide() {
+    if (currentIndex < slideCount - 1) {
+      goToSlide(currentIndex + 1);
+    } else {
+      goToSlide(0);
+    }
+  }
+  
+  function prevSlide() {
+    if (currentIndex > 0) {
+      goToSlide(currentIndex - 1);
+    } else {
+      goToSlide(slideCount - 1);
+    }
+  }
+  
+  prevBtn.addEventListener('click', prevSlide);
+  nextBtn.addEventListener('click', nextSlide);
+  
+  // Auto-play every 5 seconds
+  let autoPlay = setInterval(nextSlide, 5000);
+  
+  // Pause auto-play on hover
+  const carousel = document.querySelector('.equip-carousel');
+  carousel.addEventListener('mouseenter', () => clearInterval(autoPlay));
+  carousel.addEventListener('mouseleave', () => {
+    autoPlay = setInterval(nextSlide, 5000);
+  });
+}
+
+// Initialize carousel when DOM is loaded
+document.addEventListener('DOMContentLoaded', initCarousel);
