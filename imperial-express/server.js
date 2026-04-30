@@ -1,6 +1,7 @@
 const express        = require('express');
 const path           = require('path');
-const { BrevoClient } = require('@getbrevo/brevo');
+const brevoModule = require('@getbrevo/brevo');
+const BrevoClient = brevoModule.BrevoClient || brevoModule.default?.BrevoClient;
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
