@@ -1,204 +1,194 @@
 /* ============================================================
-   IMPERIAL ENGINEERING CONSTRUCTION LIMITED
-   main.js — client-side interactions
+   Imperial Engineering Construction Limited — main.js
    ============================================================ */
-(function () {
-  'use strict';
 
-  /* ── Navbar scroll shadow ── */
-  const navbar = document.querySelector('.navbar');
-  const onScroll = () => navbar.classList.toggle('scrolled', window.scrollY > 60);
-  window.addEventListener('scroll', onScroll, { passive: true });
-  onScroll();
+// ── Navbar: hamburger toggle ──────────────────────────────────
+const hamburger  = document.querySelector('.hamburger');
+const navMobile  = document.querySelector('.nav-mobile');
 
-  /* ── Active nav link ── */
-  const path = window.location.pathname;
-  document.querySelectorAll('.nav-links a, .nav-mobile a').forEach(a => {
-    const href = a.getAttribute('href') || '';
-    const active =
-      (path === '/'          && (href === '/'  || href === '/index.html')) ||
-      (path === '/services'  && href === '/services') ||
-      (path === '/contact'   && href === '/contact');
-    if (active) a.classList.add('active');
-  });
-
-  /* ── Hamburger ── */
-  const burger    = document.querySelector('.hamburger');
-  const mobileNav = document.querySelector('.nav-mobile');
-  if (burger && mobileNav) {
-    burger.addEventListener('click', () => {
-      burger.classList.toggle('open');
-      mobileNav.classList.toggle('open');
-      burger.setAttribute('aria-expanded', burger.classList.contains('open'));
-    });
-    mobileNav.querySelectorAll('a').forEach(a => {
-      a.addEventListener('click', () => {
-        burger.classList.remove('open');
-        mobileNav.classList.remove('open');
-        burger.setAttribute('aria-expanded', 'false');
-      });
-    });
-    document.addEventListener('click', e => {
-      if (!burger.contains(e.target) && !mobileNav.contains(e.target)) {
-        burger.classList.remove('open');
-        mobileNav.classList.remove('open');
-      }
-    });
-  }
-
-  /* ── Scroll reveal ── */
-  const revealEls = document.querySelectorAll('.reveal');
-  if (revealEls.length) {
-    const obs = new IntersectionObserver(entries => {
-      entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); } });
-    }, { threshold: 0.12 });
-    revealEls.forEach(el => obs.observe(el));
-  }
-
-  /* ── Counter animation ── */
-  function animateCount(el, target, dur = 1800) {
-    let start;
-    const tick = ts => {
-      if (!start) start = ts;
-      const p = Math.min((ts - start) / dur, 1);
-      const ease = 1 - Math.pow(1 - p, 3);
-      el.textContent = Math.floor(ease * target);
-      if (p < 1) requestAnimationFrame(tick);
-      else el.textContent = target;
-    };
-    requestAnimationFrame(tick);
-  }
-  const counters = document.querySelectorAll('[data-counter]');
-  if (counters.length) {
-    const cObs = new IntersectionObserver(entries => {
-      entries.forEach(e => {
-        if (e.isIntersecting) {
-          animateCount(e.target, parseInt(e.target.dataset.counter, 10));
-          cObs.unobserve(e.target);
-        }
-      });
-    }, { threshold: 0.5 });
-    counters.forEach(el => cObs.observe(el));
-  }
-
-  /* ── Contact form (AJAX to Express POST /send-message) ── */
-  const form = document.getElementById('contactForm');
-  if (form) {
-    form.addEventListener('submit', async e => {
-      e.preventDefault();
-      const btn = form.querySelector('.form-submit');
-      btn.disabled = true;
-      btn.innerHTML = '<span>Sending…</span>';
-      try {
-        const res  = await fetch('/send-message', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(Object.fromEntries(new FormData(form)))
-        });
-        const data = await res.json();
-        if (data.success) {
-          form.style.display = 'none';
-          document.getElementById('formSuccess').classList.add('show');
-        } else {
-          btn.disabled = false;
-          btn.innerHTML = 'Try Again';
-        }
-      } catch {
-        btn.disabled = false;
-        btn.innerHTML = 'Try Again — Network Error';
-      }
-    });
-  }
-
-  /* ── Hero parallax (subtle) ── */
-  const heroBg = document.querySelector('.hero-bg');
-  if (heroBg) {
-    window.addEventListener('scroll', () => {
-      heroBg.style.transform = `translateY(${window.scrollY * 0.22}px)`;
-    }, { passive: true });
-  }
-
-  /* ── Smooth anchor scroll ── */
-  document.querySelectorAll('a[href^="#"]').forEach(a => {
-    a.addEventListener('click', e => {
-      const tgt = document.querySelector(a.getAttribute('href'));
-      if (tgt) {
-        e.preventDefault();
-        const navH = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--nav-h'), 10) || 72;
-        window.scrollTo({ top: tgt.getBoundingClientRect().top + window.scrollY - navH - 16, behavior: 'smooth' });
-      }
-    });
-  });
-
-})();
-
-// Equipment Carousel
-function initCarousel() {
-  const track = document.querySelector('.carousel-track');
-  const slides = document.querySelectorAll('.carousel-slide');
-  const prevBtn = document.querySelector('.carousel-btn.prev');
-  const nextBtn = document.querySelector('.carousel-btn.next');
-  const dotsContainer = document.querySelector('.carousel-dots');
-  
-  if (!track || !slides.length) return;
-  
-  let currentIndex = 0;
-  const slideCount = slides.length;
-  
-  // Create dots
-  slides.forEach((_, i) => {
-    const dot = document.createElement('div');
-    dot.classList.add('carousel-dot');
-    if (i === 0) dot.classList.add('active');
-    dot.addEventListener('click', () => goToSlide(i));
-    dotsContainer.appendChild(dot);
-  });
-  
-  const dots = document.querySelectorAll('.carousel-dot');
-  
-  function updateDots() {
-    dots.forEach((dot, i) => {
-      dot.classList.toggle('active', i === currentIndex);
-    });
-  }
-  
-  function goToSlide(index) {
-    if (index < 0) index = 0;
-    if (index >= slideCount) index = slideCount - 1;
-    currentIndex = index;
-    track.style.transform = `translateX(-${currentIndex * 100}%)`;
-    updateDots();
-  }
-  
-  function nextSlide() {
-    if (currentIndex < slideCount - 1) {
-      goToSlide(currentIndex + 1);
-    } else {
-      goToSlide(0);
-    }
-  }
-  
-  function prevSlide() {
-    if (currentIndex > 0) {
-      goToSlide(currentIndex - 1);
-    } else {
-      goToSlide(slideCount - 1);
-    }
-  }
-  
-  prevBtn.addEventListener('click', prevSlide);
-  nextBtn.addEventListener('click', nextSlide);
-  
-  // Auto-play every 5 seconds
-  let autoPlay = setInterval(nextSlide, 5000);
-  
-  // Pause auto-play on hover
-  const carousel = document.querySelector('.equip-carousel');
-  carousel.addEventListener('mouseenter', () => clearInterval(autoPlay));
-  carousel.addEventListener('mouseleave', () => {
-    autoPlay = setInterval(nextSlide, 5000);
+if (hamburger && navMobile) {
+  hamburger.addEventListener('click', () => {
+    const expanded = hamburger.getAttribute('aria-expanded') === 'true';
+    hamburger.setAttribute('aria-expanded', String(!expanded));
+    navMobile.classList.toggle('open');
+    hamburger.classList.toggle('open');
   });
 }
 
-// Initialize carousel when DOM is loaded
-document.addEventListener('DOMContentLoaded', initCarousel);
+// ── Scroll reveal ─────────────────────────────────────────────
+const revealEls = document.querySelectorAll('.reveal');
+if (revealEls.length) {
+  const observer = new IntersectionObserver(
+    (entries) => entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); } }),
+    { threshold: 0.12 }
+  );
+  revealEls.forEach(el => observer.observe(el));
+}
+
+// ── Counter animation (hero stats) ───────────────────────────
+const counters = document.querySelectorAll('[data-counter]');
+if (counters.length) {
+  const counterObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (!entry.isIntersecting) return;
+      const el     = entry.target;
+      const target = +el.dataset.counter;
+      const step   = Math.ceil(target / 60);
+      let current  = 0;
+      const tick = () => {
+        current = Math.min(current + step, target);
+        el.textContent = current.toLocaleString();
+        if (current < target) requestAnimationFrame(tick);
+      };
+      tick();
+      counterObserver.unobserve(el);
+    });
+  }, { threshold: 0.5 });
+  counters.forEach(c => counterObserver.observe(c));
+}
+
+// ── Equipment carousel (services page) ───────────────────────
+const track    = document.querySelector('.carousel-track');
+const slides   = document.querySelectorAll('.carousel-slide');
+const dotsWrap = document.querySelector('.carousel-dots');
+const prevBtn  = document.querySelector('.carousel-btn.prev');
+const nextBtn  = document.querySelector('.carousel-btn.next');
+
+if (track && slides.length) {
+  let current = 0;
+
+  // Build dots
+  slides.forEach((_, i) => {
+    const dot = document.createElement('button');
+    dot.className = 'dot' + (i === 0 ? ' active' : '');
+    dot.setAttribute('aria-label', `Slide ${i + 1}`);
+    dot.addEventListener('click', () => goTo(i));
+    dotsWrap.appendChild(dot);
+  });
+
+  const dots = () => dotsWrap.querySelectorAll('.dot');
+
+  function goTo(idx) {
+    current = (idx + slides.length) % slides.length;
+    track.style.transform = `translateX(-${current * 100}%)`;
+    dots().forEach((d, i) => d.classList.toggle('active', i === current));
+  }
+
+  prevBtn && prevBtn.addEventListener('click', () => goTo(current - 1));
+  nextBtn && nextBtn.addEventListener('click', () => goTo(current + 1));
+
+  // Auto-advance
+  setInterval(() => goTo(current + 1), 4500);
+}
+
+// ── Contact Form Submission ───────────────────────────────────
+const contactForm  = document.getElementById('contactForm');
+const formSuccess  = document.getElementById('formSuccess');
+const submitBtn    = contactForm && contactForm.querySelector('.form-submit');
+
+if (contactForm) {
+  contactForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    // Clear previous errors
+    contactForm.querySelectorAll('.field-error').forEach(el => el.remove());
+    contactForm.querySelectorAll('.input-error').forEach(el => el.classList.remove('input-error'));
+
+    // Client-side validation
+    const fields = {
+      firstName: 'First name is required',
+      lastName:  'Last name is required',
+      email:     'A valid email address is required',
+      message:   'Please describe your project',
+    };
+
+    let valid = true;
+
+    for (const [id, errMsg] of Object.entries(fields)) {
+      const input = contactForm.querySelector(`#${id}`);
+      if (!input) continue;
+      const val = input.value.trim();
+      if (!val || (id === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val))) {
+        input.classList.add('input-error');
+        const err = document.createElement('span');
+        err.className   = 'field-error';
+        err.textContent = errMsg;
+        input.parentNode.appendChild(err);
+        valid = false;
+      }
+    }
+
+    if (!valid) return;
+
+    // Collect form data
+    const data = Object.fromEntries(new FormData(contactForm).entries());
+
+    // Show loading state on button
+    const originalHTML = submitBtn.innerHTML;
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = `
+      <svg class="spin" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+      </svg>
+      Sending…
+    `;
+
+    try {
+      const res  = await fetch('/send-message', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify(data),
+      });
+      const json = await res.json();
+
+      if (json.success) {
+        // Animate form out, success in
+        contactForm.style.transition  = 'opacity .4s ease, transform .4s ease';
+        contactForm.style.opacity     = '0';
+        contactForm.style.transform   = 'translateY(-10px)';
+        setTimeout(() => {
+          contactForm.style.display = 'none';
+          formSuccess.style.display = 'block';
+          formSuccess.style.opacity = '0';
+          formSuccess.style.transform = 'translateY(10px)';
+          requestAnimationFrame(() => {
+            formSuccess.style.transition = 'opacity .4s ease, transform .4s ease';
+            formSuccess.style.opacity    = '1';
+            formSuccess.style.transform  = 'translateY(0)';
+          });
+        }, 400);
+      } else {
+        showFormError(json.message || 'Something went wrong. Please try again.');
+        resetButton(originalHTML);
+      }
+    } catch {
+      showFormError('Network error. Please check your connection and try again.');
+      resetButton(originalHTML);
+    }
+  });
+
+  function resetButton(html) {
+    submitBtn.disabled   = false;
+    submitBtn.innerHTML  = html;
+  }
+
+  function showFormError(msg) {
+    let banner = contactForm.querySelector('.form-error-banner');
+    if (!banner) {
+      banner = document.createElement('div');
+      banner.className = 'form-error-banner';
+      contactForm.insertBefore(banner, contactForm.firstChild);
+    }
+    banner.textContent = `⚠️  ${msg}`;
+    banner.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  // Remove error highlight on input
+  contactForm.addEventListener('input', (e) => {
+    if (e.target.classList.contains('input-error')) {
+      e.target.classList.remove('input-error');
+      const err = e.target.parentNode.querySelector('.field-error');
+      if (err) err.remove();
+    }
+  });
+}
