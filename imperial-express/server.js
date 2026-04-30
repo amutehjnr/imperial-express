@@ -1,14 +1,19 @@
 const express        = require('express');
 const path           = require('path');
-const brevoModule = require('@getbrevo/brevo');
-const BrevoClient = brevoModule.BrevoClient || brevoModule.default?.BrevoClient;
+const nodemailer = require('nodemailer');
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
 
-// ── Brevo Client Setup ──────────────────────────────────────
-const brevo = new BrevoClient({
-  apiKey: process.env.BREVO_API_KEY,  // set this in your environment
+// ── Nodemailer (Gmail) Setup ────────────────────────────────
+// Uses a Gmail App Password — NOT your real Gmail password.
+// Generate one at: https://myaccount.google.com/apppasswords
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.GMAIL_USER,  // e.g. adekeye00@gmail.com
+    pass: process.env.GMAIL_PASS,  // 16-char App Password from Google
+  },
 });
 
 // ── Middleware ──────────────────────────────────────────────
@@ -30,8 +35,8 @@ app.post('/send-message', async (req, res) => {
     return res.status(400).json({ success: false, message: 'Please fill in all required fields.' });
   }
 
-  if (!process.env.BREVO_API_KEY) {
-    console.error('❌ BREVO_API_KEY environment variable is not set.');
+  if (!process.env.GMAIL_USER || !process.env.GMAIL_PASS) {
+    console.error('❌ GMAIL_USER or GMAIL_PASS environment variables are not set.');
     return res.status(500).json({ success: false, message: 'Server configuration error. Please contact us directly.' });
   }
 
@@ -124,16 +129,30 @@ app.post('/send-message', async (req, res) => {
     `,
   };
 
+  // Convert HTML payloads to nodemailer format
+  const notificationMail = {
+    from: `"Imperial Engineering Website" <${process.env.GMAIL_USER}>`,
+    to:   'Talk2iec@imperialengineeringconstruction.com',
+    replyTo: email,
+    subject: notificationPayload.subject,
+    html:    notificationPayload.htmlContent,
+  };
+  const autoReplyMail = {
+    from: `"Imperial Engineering Construction" <${process.env.GMAIL_USER}>`,
+    to:   email,
+    subject: autoReplyPayload.subject,
+    html:    autoReplyPayload.htmlContent,
+  };
+
   try {
     await Promise.all([
-      brevo.transactionalEmails.sendTransacEmail(notificationPayload),
-      brevo.transactionalEmails.sendTransacEmail(autoReplyPayload),
+      transporter.sendMail(notificationMail),
+      transporter.sendMail(autoReplyMail),
     ]);
     console.log(`📩 Enquiry from: ${fullName} | ${email}`);
     res.json({ success: true, message: 'Message received. We will get back to you within 24 hours.' });
   } catch (error) {
-    const errBody = error?.response?.data || error?.message || error;
-    console.error('❌ Brevo error:', JSON.stringify(errBody, null, 2));
+    console.error('❌ Mail error:', error.message);
     res.status(500).json({
       success: false,
       message: 'Sorry, there was an issue sending your message. Please try calling us directly at +234 806 536 0379.',
