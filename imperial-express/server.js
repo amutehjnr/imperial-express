@@ -59,7 +59,7 @@ app.post('/send-message', async (req, res) => {
   const fullName     = `${firstName} ${lastName}`;
 
   const notificationPayload = {
-    subject: `New Enquiry from ${fullName} — Imperial Engineering`,
+    subject: `New Enquiry from ${fullName} (${email}) — Imperial Engineering`,
     sender:  { name: 'Imperial Engineering Website', email: 'Talk2iec@imperialengineeringconstruction.com' },
     to:      [{ email: 'Talk2iec@imperialengineeringconstruction.com', name: 'Imperial Engineering' }],
     replyTo: { email, name: fullName },
@@ -125,14 +125,14 @@ app.post('/send-message', async (req, res) => {
   try {
     await Promise.all([
       resend.emails.send({
-        from:    'Imperial Engineering <onboarding@resend.dev>',
-        to:      'adekeye00@gmail.com',
-        replyTo: email,
+        from:    'Imperial Engineering <Talk2iec@imperialengineeringconstruction.com>',
+        to:      'Talk2iec@imperialengineeringconstruction.com',
+        replyTo: { name: fullName, email },
         subject: notificationPayload.subject,
         html:    notificationPayload.htmlContent,
       }),
       resend.emails.send({
-        from:    'Imperial Engineering <onboarding@resend.dev>',
+        from:    'Imperial Engineering <Talk2iec@imperialengineeringconstruction.com>',
         to:      email,
         subject: autoReplyPayload.subject,
         html:    autoReplyPayload.htmlContent,
