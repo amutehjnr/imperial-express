@@ -1,20 +1,13 @@
 const express        = require('express');
 const path           = require('path');
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 
-const app  = express();
-const PORT = process.env.PORT || 3000;
+const app    = express();
+const PORT   = process.env.PORT || 3000;
 
-// ── Nodemailer (Gmail) Setup ────────────────────────────────
-// Uses a Gmail App Password — NOT your real Gmail password.
-// Generate one at: https://myaccount.google.com/apppasswords
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.GMAIL_USER,  // e.g. adekeye00@gmail.com
-    pass: process.env.GMAIL_PASS,  // 16-char App Password from Google
-  },
-});
+// ── Resend Setup ────────────────────────────────────────────
+// Get a free API key at: https://resend.com
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 // ── Middleware ──────────────────────────────────────────────
 app.use(express.static(path.join(__dirname, 'public')));
@@ -35,8 +28,8 @@ app.post('/send-message', async (req, res) => {
     return res.status(400).json({ success: false, message: 'Please fill in all required fields.' });
   }
 
-  if (!process.env.GMAIL_USER || !process.env.GMAIL_PASS) {
-    console.error('❌ GMAIL_USER or GMAIL_PASS environment variables are not set.');
+  if (!process.env.RESEND_API_KEY) {
+    console.error('❌ RESEND_API_KEY environment variable is not set.');
     return res.status(500).json({ success: false, message: 'Server configuration error. Please contact us directly.' });
   }
 
@@ -129,25 +122,21 @@ app.post('/send-message', async (req, res) => {
     `,
   };
 
-  // Convert HTML payloads to nodemailer format
-  const notificationMail = {
-    from: `"Imperial Engineering Website" <${process.env.GMAIL_USER}>`,
-    to:   'Talk2iec@imperialengineeringconstruction.com',
-    replyTo: email,
-    subject: notificationPayload.subject,
-    html:    notificationPayload.htmlContent,
-  };
-  const autoReplyMail = {
-    from: `"Imperial Engineering Construction" <${process.env.GMAIL_USER}>`,
-    to:   email,
-    subject: autoReplyPayload.subject,
-    html:    autoReplyPayload.htmlContent,
-  };
-
   try {
     await Promise.all([
-      transporter.sendMail(notificationMail),
-      transporter.sendMail(autoReplyMail),
+      resend.emails.send({
+        from:    'Imperial Engineering <onboarding@resend.dev>',
+        to:      'adekeye00@gmail.com',
+        replyTo: email,
+        subject: notificationPayload.subject,
+        html:    notificationPayload.htmlContent,
+      }),
+      resend.emails.send({
+        from:    'Imperial Engineering <onboarding@resend.dev>',
+        to:      email,
+        subject: autoReplyPayload.subject,
+        html:    autoReplyPayload.htmlContent,
+      }),
     ]);
     console.log(`📩 Enquiry from: ${fullName} | ${email}`);
     res.json({ success: true, message: 'Message received. We will get back to you within 24 hours.' });
